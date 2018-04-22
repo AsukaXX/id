@@ -23,6 +23,10 @@ int main() {
 				s.wordlist_p(word);
 				//cout << word << endl;
 				word.clear();
+			}
+			else if (line[i] == '/'&&line[i - 1] == '/') {
+				word_t = line.substr(i+1);
+				continue;
 			}else if (word.size() != 0) {
 				word_t = word;
 				s.wordlist_p(word);
