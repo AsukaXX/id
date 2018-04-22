@@ -42,6 +42,8 @@ Sort::Sort() {
 	flag["function"] = 0;
 	flag["output"] = 0;
 	flag["cycle"] = 0;
+	flag["headfile"] = 0;
+	flag["enum"] = 0;
 }
 
 void Sort::wordlist_p(string s) {
@@ -59,7 +61,7 @@ void Sort::sortword() {
 			continue;
 		if (judgeou())
 			continue;
-		for (char w : word) {
+		/*for (char w : word) {
 			if (judgenumber(w)) {
 				if (word_t.size() != 0 && l_w.second == 903) {
 					if (flag["function"] != 0)
@@ -78,7 +80,7 @@ void Sort::sortword() {
 				word.clear();
 				break;
 			}
-		}
+		}*/
 		if (word.empty())
 			continue;
 		if (judges())
@@ -104,7 +106,24 @@ bool Sort::judgef() {
 				l_w.second = 8;//输出
 				return 1;
 			}
+			if ((word[0]=='"'||word[0]=='<')&&l_w.second == 101&&flag["headfile"]==0){
+				l_w.first = word;
+				l_w.second = 101;
+				flag["headfile"] = 1;
+				return 1;
+			}
+			if (word[0] == '"'&&flag["headfile"] == 0) {
+				flag["output"] = 1;
+				l_w.first = word;
+				l_w.second = 8;
+				return 1;
+			}
 			if (word[0] == '&'&&l_w.second == 105) {
+				l_w.first = word;
+				l_w.second = 105;
+				return 1;
+			}
+			if (word[0]=='>'&&l_w.second == 105) {
 				l_w.first = word;
 				l_w.second = 105;
 				return 1;
@@ -113,38 +132,48 @@ bool Sort::judgef() {
 			if (s != f_map.end()) {
 				l_w.first = word;
 				l_w.second = s->second;//符号
+				if ((word[0] == '"' || word[0] == '>') && flag["headfile"] == 1)
+					flag["headfile"] = 0;
+				if (word[0] == '(') {
+					stack_f.push_back(word);
+				}
+				if (word[0] == ')') {
+					stack_f.pop_back();
+				}
 				if (word[0] == '{') {
-					if (stack_f.size() != 0&&stack_f.back() == " ")
-						stack_f.pop_back();
 					stack_f.push_back(word);
 				}
 				if (word[0] == '}'&&stack_f.size() != 0) {
-					stack_f.pop_back();
+					if (stack_s.back() == "en")
+						flag["enum"] -= 1;
 					if (stack_s.back() == "cl")
 						flag["class"] -= 1;
 					if (stack_s.back() == "fu")
 						flag["function"] -= 1;
 					if (stack_s.back() == "cy")
 						flag["cycle"] -= 1;
+					stack_f.pop_back();
 					stack_s.pop_back();
 				}
 				if (word[0] == ';'&&stack_f.size()!=0) {
-					while (stack_f.size() != 0&&stack_f.back() == " ") {
-						if (stack_s.back() == "cl")
-							flag["class"] -= 1;
-						if (stack_s.back() == "fu")
-							flag["function"] -= 1;
-						if (stack_s.back() == "cy")
-							flag["cycle"] -= 1;
+					if(stack_f.back()!="("){
+						while (stack_f.size() != stack_s.size()) {
+							if (stack_s.back() == "cl")
+								flag["class"] -= 1;
+							if (stack_s.back() == "fu")
+								flag["function"] -= 1;
+							if (stack_s.back() == "cy")
+								flag["cycle"] -= 1;
+							stack_s.pop_back();
+						}
 						stack_f.pop_back();
-						stack_s.pop_back();
 					}
 				}
 				if (word_t.size() != 0 && word[0] == ')') {
 					fun.push_back(word_t);
 					flag["function"] += 1;
 					stack_s.push_back("fu");
-					stack_f.push_back(" ");
+					
 					word_t.clear();
 				}
 				return 1;
@@ -168,7 +197,7 @@ bool Sort::judgecl() {
 			l_w.second = 4;//函数名
 			flag["function"] += 1;
 			stack_s.push_back("fu");
-			stack_f.push_back(" ");
+			//stack_f.push_back(" ");
 			return 1;
 		}
 		if (r_w.first[0] == '(') {
@@ -177,7 +206,7 @@ bool Sort::judgecl() {
 			l_w.second = 4;//函数名
 			flag["function"] += 1;
 			stack_s.push_back("fu");
-			stack_f.push_back(" ");
+			//stack_f.push_back(" ");
 			return 1;
 		}
 		l_w.first = word;
@@ -190,7 +219,7 @@ bool Sort::judgecl() {
 		l_w.second = 105;//类名
 		flag["class"] += 1;
 		stack_s.push_back("cl");
-		stack_f.push_back(" ");
+		//stack_f.push_back(" ");
 		word.clear();
 		return 1;
 	}
@@ -204,21 +233,24 @@ bool Sort::judges() {
 			fun.push_back(word_t);
 			flag["function"] += 1;
 			stack_s.push_back("fu");
-			stack_f.push_back(" ");
 			word_t.clear();
 		}
 		l_w.first = word;
 		l_w.second = s->second;//系统保留字
 		sys.push_back(word);
 		if (s->second == 106) {
-			stack_f.push_back(" ");
+			//stack_f.push_back(" ");
 			stack_s.push_back("cy");
 			flag["cycle"] += 1;
 		}
 		if (s->second == 109) {
-			stack_f.push_back(" ");
+			//stack_f.push_back(" ");
 			stack_s.push_back("fu");
 			flag["function"] += 1;
+		}
+		if (s->first == "enum") {
+			stack_s.push_back("en");
+			flag["enum"] += 1;
 		}
 		return 1;
 	}
@@ -234,7 +266,7 @@ bool Sort::judgefu() {
 			fun.push_back(word);
 			flag["function"] += 1;
 			stack_s.push_back("fu");
-			stack_f.push_back(" ");
+			//stack_f.push_back(" ");
 			word.clear();
 			return 1;
 		}
@@ -242,15 +274,16 @@ bool Sort::judgefu() {
 			l_w.first = word;
 			l_w.second = 20;//函数名或变量名
 			word_t = word;
+			//stack_f.push_back(" ");
 			return 1;
 		}
-		if (r_w.first[0] == '('&&l_w.first == ".") {
+		if (r_w.first[0] == '(') {
 			fun.push_back(word);
 			l_w.first = word;
 			l_w.second = 4;//函数名
 			flag["function"] += 1;
 			stack_s.push_back("fu");
-			stack_f.push_back(" ");
+			//stack_f.push_back(" ");
 			word.clear();
 			return 1;
 		}
@@ -259,14 +292,13 @@ bool Sort::judgefu() {
 }
 
 bool Sort::judgeou() {
-	if (l_w.second == 915 || l_w.second == 8) {
-		flag["output"] = 1;
+	/*if (l_w.second == 8) {
 		out.push_back(word);
 		l_w.first = word;
 		l_w.second = 8;//输出
 		word.clear();
 		return 1;
-	}
+	}*/
 	if (flag["output"] == 1) {
 		out.push_back(word);
 		l_w.first = word;
@@ -278,28 +310,23 @@ bool Sort::judgeou() {
 }
 
 bool Sort::judgel() {
-	for (char w : r_w.first) {
-		if (!judgeletter(w) && !judgenumber(w)) {
-			if (w == '>'&&l_w.first == "<") {
-				l_w.first = word;
-				l_w.second = 100;//头文件
-				sys.push_back(word);
-				word.clear();
-				return 1;
-			}
-			if (w == ';'&&l_w.second == 103) {
+			if (r_w.first[0] == ';'&&l_w.second == 103) {
 				l_w.first = word;
 				l_w.second = 120;//命名空间
 				sys.push_back(word);
 				word.clear();
 				return 1;
 			}
-		}
-	}
 	return 0;
 }
 
 bool Sort::judgev() {
+	if (l_w.second == 101) {
+		sys.push_back(word);
+		l_w.first = word;
+		l_w.second = 101;
+		return 1;
+	}
 	if (flag["function"] != 0) {
 		if (word_t.size() != 0) {
 			veri_c.push_back(word_t);
