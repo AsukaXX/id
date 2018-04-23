@@ -152,12 +152,19 @@ bool Sort::judgef() {
 						flag["function"] -= 1;
 					if (stack_s.back() == "cy")
 						flag["cycle"] -= 1;
+					cout << flag["class"] << flag["function"] << stack_f.back() << stack_s.back() << endl;
 					stack_f.pop_back();
 					stack_s.pop_back();
+					/*if (flag["class"] == 0) {
+						flag["function"] = 0;
+						stack_s.clear();
+						stack_f.clear();
+					}*/
+					
 				}
 				if (word[0] == ';'&&stack_f.size()!=0) {
-					if(stack_f.back()!="("){
-						while (stack_f.size() != stack_s.size()) {
+					//if(stack_f.back()!="("){
+						while (stack_f.size() < stack_s.size()) {
 							if (stack_s.back() == "cl")
 								flag["class"] -= 1;
 							if (stack_s.back() == "fu")
@@ -166,8 +173,8 @@ bool Sort::judgef() {
 								flag["cycle"] -= 1;
 							stack_s.pop_back();
 						}
-						stack_f.pop_back();
-					}
+						//stack_f.pop_back();
+					//}
 				}
 				if (word_t.size() != 0 && word[0] == ')') {
 					fun.push_back(word_t);
@@ -208,6 +215,10 @@ bool Sort::judgecl() {
 			stack_s.push_back("fu");
 			//stack_f.push_back(" ");
 			return 1;
+		}
+		if (l_w.second == 104) {
+			flag["class"] += 1;
+			stack_s.push_back("cl");
 		}
 		l_w.first = word;
 		l_w.second = 105;//类名
@@ -273,11 +284,13 @@ bool Sort::judgefu() {
 		if (l_w.second == 105 && r_w.first[0] == '(') {
 			l_w.first = word;
 			l_w.second = 20;//函数名或变量名
+			//stack_s.push_back("fu");
+			//fun.push_back(word);
 			word_t = word;
 			//stack_f.push_back(" ");
 			return 1;
 		}
-		if (r_w.first[0] == '(') {
+		 if((l_w.second==913||l_w.second==911||l_w.second==902)&&r_w.first[0] == '(') {
 			fun.push_back(word);
 			l_w.first = word;
 			l_w.second = 4;//函数名
@@ -321,11 +334,16 @@ bool Sort::judgel() {
 }
 
 bool Sort::judgev() {
-	if (l_w.second == 101) {
+	if (flag["headfile"]!=0) {
 		sys.push_back(word);
 		l_w.first = word;
 		l_w.second = 101;
 		return 1;
+	}
+	if ((judgeletter(r_w.first[0])||r_w.first[0]=='&'||r_w.first[0]=='*')&&word_t.size()!=0&&l_w.second==903) {
+		fun.push_back(word_t);
+		flag["function"] += 1;
+		word_t.clear();
 	}
 	if (flag["function"] != 0) {
 		if (word_t.size() != 0) {
@@ -353,7 +371,7 @@ bool Sort::judgev() {
 }
 
 void Sort::print() {
-	cout << "sys:" << endl;
+	/*cout << "sys:" << endl;
 	for (string s : sys)
 		cout << s << endl;
 	cout << "fun:" << endl;
@@ -370,5 +388,37 @@ void Sort::print() {
 		cout << s << endl;
 	cout << "ver_c:" << endl;
 	for (string s : veri_c)
-		cout << s << endl;
+		cout << s << endl;*/
+	cout << "wirte" << endl;
+	ofstream count_f;
+	count_f.open(dir+"\\system.txt", ios::ate);
+	for (string s : sys)
+		count_f << s << endl;
+	count_f.close();
+	count_f.open(dir + "\\class.txt", ios::ate);
+	for (string s : cla)
+		count_f << s << endl;
+	count_f.close();
+	count_f.open(dir + "\\fuction.txt", ios::ate);
+	for (string s : fun)
+		count_f << s << endl;
+	count_f.close();
+	count_f.open(dir + "\\output.txt", ios::ate);
+	for (string s : out)
+		count_f << s << endl;
+	count_f.close();
+	count_f.open(dir + "\\veriable_l.txt", ios::ate);
+	for (string s : veri_c)
+		count_f << s << endl;
+	count_f.close();
+	count_f.open(dir + "\\veriable_g.txt", ios::ate);
+	for (string s : veri)
+		count_f << s << endl;
+	count_f.close();
+	cout << "finish" << endl;
+	cout << flag["class"] << flag["function"] << stack_f.back() << stack_s.back() << endl;
+}
+
+void Sort::dirctory(string path) {
+	dir = path;
 }

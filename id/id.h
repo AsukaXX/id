@@ -8,6 +8,8 @@
 #include<queue>
 
 using namespace std;
+using index = map<string, set<int>>;
+using index_it = map<string, set<int>>::iterator;
 
 bool judgenumber(char c);
 bool judgeletter(char c);

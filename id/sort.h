@@ -4,6 +4,7 @@
 class Sort {
 public:
 	Sort();
+	void dirctory(string path);
 	void wordlist_p(string s);
 	void sortword();
 	bool judgef();
@@ -17,7 +18,7 @@ public:
 private:
 	map<string, int> sysword, f_map, flag;
 	queue<string> wordlist;
-	string word,word_t;
+	string word,word_t,dir;
 	pair<string, int> l_w, r_w;
 	vector<string> fun, veri, sys, cla, out, veri_c, stack_s, stack_f;
 	map<string, int>::iterator s;
