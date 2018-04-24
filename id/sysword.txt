@@ -7,7 +7,7 @@ double 105
 float 105
 char 105
 void 105
-enum 105;
+enum 105
 string 105
 map 105
 vector 105
@@ -24,6 +24,7 @@ istringstream 105
 ifstream 105
 ofstream 105
 const 105
+virtual 105
 if 106
 else 106
 while 106

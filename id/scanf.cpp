@@ -21,9 +21,11 @@ int main() {
 	index_it index_it;
 	int line_s=0;
 	Sort s;
-	cin >> path;
-	//path = "D:\\C++\\serach\\serach\\simil_fuction.cpp";
-	c_f.open(path);
+	do {
+		cin >> path;
+		//path = "D:\\C++\\serach\\serach\\simil_fuction.cpp";
+		c_f.open(path);
+	}while(!c_f);
 	s.dirctory(path.substr(0, path.find("\\")));
 	while (getline(c_f, line)) {
 		++line_s;
